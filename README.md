@@ -1,5 +1,7 @@
 # grunt-copy-bower
 
+[![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Build status][appveyor-image]][appveyor-url] [![Dependency status][david-dm-image]][david-dm-url] [![De vDependency status][david-dm-dev-image]][david-dm-dev-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Built with Grunt][grunt-image]][grunt-url]
+
 > A grunt plugin that copies bower component files to wherever you want.
 
 I found neither  _grunt-bowercopy_ nor _grunt-bower-copy_ does the intuitive things they should do.[Bower](http://bower.io/) is manager tool for front-end compoents.Every components has its own _bower.json_ which indicates the _main_ file,so copying operation requires no source file but the destination.That is so obvious!
@@ -39,53 +41,120 @@ grunt.initConfig({
 
 ### Options
 
-#### options.separator
-Type: `String`
-Default value: `',  '`
+#### options.shim
+Type: `Object`
+Default value: `{}`
 
-A string value that is used to do something with whatever.
+Override default copting behavier of a component
 
-#### options.punctuation
-Type: `String`
-Default value: `'.'`
+#### options.ignore
+Type: `Function|Array|String|RegExp`
+Default value: `[]`
 
-A string value that is used to do something else with whatever else.
+A series of pattern to match the files you want to ignore.
 
 ### Usage Examples
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+In general,you should always define only one task,because all the src defined in bower will be copied if not in ignore pattern.
 
-```js
-grunt.initConfig({
-  copy_bower: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
+#### Options
 
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
+######shim
+
+In shim,you could override the default copying behavier,e.g,
 
 ```js
 grunt.initConfig({
   copy_bower: {
     options: {
-      separator: ': ',
-      punctuation: ' !!!',
+      shim: {
+        'requirejs-text': {
+          main: 'text.js',
+          dest: 'test/dest/plugin/'
+        },
+        'underscore': {
+           dest: 'test/dest/_.js'
+        }
+      }
     },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
+    dest: 'test/dest/'
   },
 });
 ```
+All the files defined in bower will be copied into `test/dest` keeping the origin file name except _underscore.js_ to _\_.js_,_text.js_ to _plugin/text.js_.Note that no main file defined will lead to an error,so the _main_ defined for _requirejs-text_ is highly required.
+
+You can also define _dest_ as a function:
+
+```js
+grunt.initConfig({
+  copy_bower: {
+    options: {
+      shim: {
+        'requirejs-text': {
+          main: 'text.js',
+          dest: 'test/dest/plugin/'
+        },
+        'underscore': {
+           dest: 'test/dest/_.js'
+        }
+      }
+    },
+    dest: function(path) {
+          if (/\.(c|le)ss$/i.test(path)) {
+            return 'test/dest/css/';
+          } else if (/\.js$/i.test(path)) {
+            return 'test/dest/js/';
+          } else {
+            return 'test/dest/bin';
+          }
+    }
+  },
+});
+```
+But it's restricted that _dest_ in tasks does this,not in _shim_.
+
+_ignore_ could be pattens in **Array**/**Function**/**RegExp**/**String**,and nest of arrays is allowed,e.g,
+
+```js
+grunt.initConfig({
+  copy_bower: {
+    options: {
+      shim: {
+        bootstrap: {
+              ignore: ['less/*.less', /\.(eot|svg|ttf|woff)$/i, functfilename) {
+            if ('dist/js/bootstrap.js' === filename) {
+              return true;
+            }
+          }]
+        }
+      },
+      ignore: 'dist/js/bootstrap.css'
+    },
+    dest: 'test/dest/'
+  },
+});
+```
+_ignore_ in _options_ could work too.Note that the patterns only match the main file in bower,not the real file name or path.
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
-_(Nothing yet)_
+ - 2014-11-26: Support basic copy operation
+
+
+[npm-url]: https://npmjs.org/package/grunt-copy-bower
+[downloads-image]: http://img.shields.io/npm/dm/grunt-copy-bower.svg
+[npm-image]: http://img.shields.io/npm/v/grunt-copy-bower.svg
+[travis-url]: https://travis-ci.org/yanni4night/grunt-copy-bower
+[travis-image]: http://img.shields.io/travis/yanni4night/grunt-copy-bower.svg
+[appveyor-image]:https://ci.appveyor.com/api/projects/status/y44cdve2kvcge3h3?svg=true
+[appveyor-url]:https://ci.appveyor.com/project/yanni4night/grunt-copy-bower
+[david-dm-url]:https://david-dm.org/yanni4night/grunt-copy-bower
+[david-dm-image]:https://david-dm.org/yanni4night/grunt-copy-bower.svg
+[david-dm-dev-url]:https://david-dm.org/yanni4night/grunt-copy-bower#info=devDependencies
+[david-dm-dev-image]:https://david-dm.org/yanni4night/grunt-copy-bower/dev-status.svg
+[coveralls-url]:https://coveralls.io/r/yanni4night/grunt-copy-bower
+[coveralls-image]:https://coveralls.io/repos/yanni4night/grunt-copy-bower/badge.png
+[grunt-url]:http://gruntjs.com/
+[grunt-image]: http://img.shields.io/badge/BUILT%20WITH-GRUNT-yellow.svg
