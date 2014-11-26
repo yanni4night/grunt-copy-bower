@@ -28,13 +28,13 @@ exports.copy_bower = {
   setUp: function(done) {
     done();
   },
-  default_options: function(test) {
-    var files = ['angular.js', 'backbone.js', 'ember.js', 'handlebars.js', 'require.js', 'plugin/text.js', '_.js', 'jquery.js'];
-    
+  test: function(test) {
+    var files = ['angular.js', 'backbone.js', 'ember.js', 'handlebars.js', 'require.js', 'text.js', 'underscore.js', 'jquery.js', 'bootstrap.css', 'bootstrap.less', 'glyphicons-halflings-regular.ttf'];
+
     test.expect(files.length);
 
     files.forEach(function(file) {
-      test.ok(fs.existsSync(path.join(__dirname, 'dest', 'js', file)), file + ' should exist');
+      test.ok(fs.existsSync(path.join(__dirname, 'dest', file)), file + ' should exist');
     });
 
     test.done();
