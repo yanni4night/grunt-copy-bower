@@ -103,13 +103,37 @@ module.exports = function(grunt) {
       return false;
     };
 
+    /**
+     * Get the lowercase form of ext.
+     *
+     * @param  {String} filename
+     * @return {String}
+     * @since 0.1.0
+     */
+    var getExt = function(filename) {
+      return (path.extname(filename) || '').replace(/^\./, '').toLowerCase();
+    };
+
+    /**
+     * Detect the file type.
+     *
+     * @type {Object}
+     * @since 0.1.0
+     */
     var fileTypeDetector = {
       _ext: function(ext, filename) {
         if (Array.isArray(ext)) {
           ext = '(' + ext.join('|') + ')';
         }
-        return new RegExp('\\.' + ext + '$', 'i').test(filename);
+        return new RegExp('\\.' + ext + '$', 'i').test(path.extname(filename));
       },
+      /**
+       * If a file name could be deteced.
+       *
+       * @param  {String} filename
+       * @return {String|Undefined}
+       * @since 0.1.0
+       */
       detected: function(filename) {
         var types = Object.keys(this).filter(function(func) {
           return /^is\w+$/.test(func) && isFunction(this[func]);
@@ -121,20 +145,8 @@ module.exports = function(grunt) {
           }
         }
       },
-      isCss: function(filename) {
-        return this._ext.bind(this, 'css').apply(this, arguments);
-      },
-      isLess: function(filename) {
-        return this._ext.bind(this, 'less').apply(this, arguments);
-      },
-      isSass: function(filename) {
-        return this._ext.bind(this, ['scss', 'sass']).apply(this, arguments);
-      },
-      isCoffee: function(filename) {
-        return this._ext.bind(this, 'coffee').apply(this, arguments);
-      },
-      isJs: function(filename) {
-        return this._ext.bind(this, 'js').apply(this, arguments);
+      isHtml: function(filename) {
+        return this._ext.bind(this, ['html', 'htm', 'shtml']).apply(this, arguments);
       },
       isImage: function(filename) {
         return this._ext.bind(this, ['jpg', 'jpeg', 'ico', 'bmp', 'png', 'gif', 'webp']).apply(this, arguments);
@@ -177,6 +189,11 @@ module.exports = function(grunt) {
             }
           }
 
+          if (!main) {
+            grunt.log.warn('No main file found in component "' + key + '"');
+            return;
+          }
+
           depsCollection.push({
             dir: dep.canonicalDir,
             main: main,
@@ -200,21 +217,23 @@ module.exports = function(grunt) {
       depsCollection.forEach(function(dep) {
         if (dep.main) {
           var dst, src = path.join(dep.dir, dep.main),
-            fileType;
+            fileType, ext, filename = path.basename(dep.main);
 
           //Lookup shim
           if (uniformShim[dep.name] && uniformShim[dep.name].dest) {
 
             if (likeDirectory(uniformShim[dep.name].dest)) {
               //dest for a single could be a directory
-              dst = path.join(uniformShim[dep.name].dest, path.basename(dep.main));
+              dst = path.join(uniformShim[dep.name].dest, filename);
             } else {
               //or a file
               dst = uniformShim[dep.name].dest;
             }
 
+          } else if ((ext = getExt(src)) && likeDirectory(options[ext + 'Dest'])) {
+            dst = path.join(options[ext + 'Dest'], filename);
           } else if ((fileType = fileTypeDetector.detected(src)) && likeDirectory(options[fileType + 'Dest'])) {
-            dst = path.join(options[fileType + 'Dest'], path.basename(dep.main));
+            dst = path.join(options[fileType + 'Dest'], filename);
           } else {
             dst = path.join(isFunction(uniformDest) ? uniformDest.call(self, dep.main) : uniformDest, path.basename(dep.main));
           }
