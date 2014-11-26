@@ -36,7 +36,13 @@ module.exports = function(grunt) {
       all: {
         options: {
           shim: {
-            'requirejs-text': 'text.js'
+            'requirejs-text': {
+              main: 'text.js',
+              dest: 'test/dest/js/plugin/'
+            },
+            'underscore': {
+              dest: 'test/dest/js/_.js'
+            }
           }
         },
         dest: 'test/dest/js/'

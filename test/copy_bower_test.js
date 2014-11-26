@@ -29,7 +29,7 @@ exports.copy_bower = {
     done();
   },
   default_options: function(test) {
-    var files = ['angular.js', 'backbone.js', 'ember.js', 'handlebars.js', 'require.js', 'text.js', 'underscore.js', 'jquery.js'];
+    var files = ['angular.js', 'backbone.js', 'ember.js', 'handlebars.js', 'require.js', 'plugin/text.js', '_.js', 'jquery.js'];
     
     test.expect(files.length);
 

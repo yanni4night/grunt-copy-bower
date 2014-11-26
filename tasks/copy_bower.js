@@ -28,13 +28,20 @@ module.exports = function(grunt) {
       shim: {}
     });
 
-    var dest = this.data.dest;
+    var uniformDest = this.data.dest;
 
-    if (!dest || dest.constructor !== String) {
-      grunt.fail.log('"dest" should be a string');
-    }
-    if (fs.existsSync(dest) && fs.lstatSync(dest).isFile()) {
-      grunt.fail.log('"dest" should be a directory path');
+    /**
+     * If a file path looks like a direcotry
+     * @param  {String} filepath
+     * @return {Boolean}
+     * @since 0.1.0
+     */
+    var likeDirectory = function(filepath) {
+      return filepath && filepath.constructor === String && !path.extname(filepath); //new RegExp(path.sep + '[\\w\-]*$').test(path);
+    };
+
+    if (!likeDirectory(uniformDest)) {
+      grunt.fail.warn('"dest" should be a directory path');
     }
 
     var done = this.async(); //This task is asynchronous
@@ -44,16 +51,16 @@ module.exports = function(grunt) {
       var keys = Object.keys(deps);
       keys.forEach(function(key, idx) {
         var dep = deps[key];
-        var mains = []
+        var mains = [];
 
         dep.pkgMeta = dep.pkgMeta || {};
-
+        //main could be an array
         mains = Array.isArray(dep.pkgMeta.main) ? dep.pkgMeta.main : [dep.pkgMeta.main];
 
         mains.forEach(function(main) {
           depsCollection.push({
             dir: dep.canonicalDir,
-            main: main || options.shim[key],
+            main: main || (options.shim[key] ? options.shim[key].main : undefined),
             version: dep.pkgMeta.version,
             name: key
           });
@@ -69,7 +76,16 @@ module.exports = function(grunt) {
       depsCollection.forEach(function(dep) {
         if (dep.main) {
           var src = path.join(dep.dir, dep.main);
-          var dst = path.join(dest, path.basename(dep.main));
+          var dst;
+          if (options.shim[dep.name] && options.shim[dep.name].dest) {
+            if (likeDirectory(options.shim[dep.name].dest)) {
+              dst = path.join(options.shim[dep.name].dest, path.basename(dep.main));
+            }else{
+              dst = options.shim[dep.name].dest;
+            }
+          } else {
+            dst = path.join(uniformDest, path.basename(dep.main));
+          }
           grunt.file.write(dst, grunt.file.read(src));
         } else {
           grunt.fail.warn('No main file found in "' + dep.name + '"');
