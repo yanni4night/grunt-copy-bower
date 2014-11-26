@@ -15,7 +15,8 @@
 
 var bower = require('bower'),
   path = require('path'),
-  fs = require('fs');
+  fs = require('fs'),
+  util = require('util');
 
 module.exports = function(grunt) {
 
@@ -28,9 +29,11 @@ module.exports = function(grunt) {
       shim: {
         /*'requirejs-text': {
           main: 'text.js',
+          ignore: [],
           dest: 'test/dest/js/plugin/'
         }*/
-      }
+      },
+      ignore: []
     });
 
     var self = this;
@@ -44,6 +47,40 @@ module.exports = function(grunt) {
      */
     var likeDirectory = function(filepath) {
       return filepath && filepath.constructor === String && !path.extname(filepath); //new RegExp(path.sep + '[\\w\-]*$').test(path);
+    };
+
+    /**
+     * If key should be ignored according to ignore pattern.
+     *
+     * @param  {Array|RegExp|String|Function} ignore pattern
+     * @param  {String} key
+     * @return {Boolean}
+     */
+    var shouldIgnored = function(ignore, key) {
+
+      if (!ignore || !key) {
+        return false;
+      } else if (Array.isArray(ignore)) {
+        return ignore.some(function(ig) {
+          return shouldIgnored(ig, key);
+        });
+      } else if (util.isRegExp(ignore)) {
+        if (ignore.test(key)) {
+          return true;
+        }
+      } else if (ignore.constructor === String) {
+        if (grunt.file.match(ignore, key)) {
+          return true;
+        }
+      } else if ('function' === typeof ignore) {
+        if (true === ignore.call(self, key)) {
+          return true;
+        }
+      } else {
+        grunt.log.warn('Illegal ignore:' + ignore);
+      }
+
+      return false;
     };
 
     //dest could be a function
@@ -65,9 +102,18 @@ module.exports = function(grunt) {
         mains = Array.isArray(dep.pkgMeta.main) ? dep.pkgMeta.main : [dep.pkgMeta.main];
 
         mains.forEach(function(main) {
+
+          if (options.shim[key]) {
+            main = main || options.shim[key].main;
+            if (shouldIgnored(options.shim[key].ignore, main) || shouldIgnored(options.ignore, main)) {
+              grunt.log.debug('"' + main + '" is ignored');
+              return;
+            }
+          }
+
           depsCollection.push({
             dir: dep.canonicalDir,
-            main: main || (options.shim[key] ? options.shim[key].main : undefined),
+            main: main,
             version: dep.pkgMeta.version,
             name: key
           });

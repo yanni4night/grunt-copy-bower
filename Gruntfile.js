@@ -67,6 +67,24 @@ module.exports = function(grunt) {
             return 'test/dest/bin';
           }
         }
+      },
+      ignore: {
+        options: {
+          shim: {
+            'requirejs-text': {
+              main: 'text.js'
+            },
+            bootstrap: {
+              ignore: ['less/*.less', /\.(eot|svg|ttf|woff)$/i, function(filename) {
+                if ('dist/js/bootstrap.js' === filename) {
+                  return true;
+                }
+              }]
+            }
+          },
+          ignore: 'dist/js/bootstrap.css'
+        },
+        dest: 'test/dest'
       }
     },
 
@@ -74,7 +92,8 @@ module.exports = function(grunt) {
     nodeunit: {
       default: ['test/default_test.js'],
       custom_component_dest: ['test/custom_component_dest_test.js'],
-      function_dest: ['test/function_dest_test.js']
+      function_dest: ['test/function_dest_test.js'],
+      ignore: ['test/ignore_test.js']
     }
 
   });
@@ -85,7 +104,7 @@ module.exports = function(grunt) {
 
   // Whenever the "test" task is run, first clean the "tmp" dir, then run this
   // plugin's task(s), then test the result.
-  grunt.registerTask('test', ['clean', 'copy_bower:default', 'nodeunit:default', 'clean', 'copy_bower:custom_component_dest','nodeunit:custom_component_dest','clean', 'copy_bower:function_dest','nodeunit:function_dest']);
+  grunt.registerTask('test', ['clean', 'copy_bower:default', 'nodeunit:default', 'clean', 'copy_bower:custom_component_dest', 'nodeunit:custom_component_dest', 'clean', 'copy_bower:function_dest', 'nodeunit:function_dest', 'clean', 'copy_bower:ignore', 'nodeunit:ignore']);
 
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
