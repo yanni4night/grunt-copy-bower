@@ -38,6 +38,25 @@ module.exports = function(grunt) {
 
     var self = this;
     var uniformDest = self.data.dest;
+    var uniformShim = options.shim || {};
+
+    /**
+     * @param  {Mixed}  f
+     * @return {Boolean}
+     * @since 0.1.0
+     */
+    var isFunction = function(f) {
+      return 'function' === typeof f;
+    };
+
+    /**
+     * @param  {Mixed}  str
+     * @return {Boolean}
+     * @since 0.1.0
+     */
+    var isNonEmptyString = function(str) {
+      return str && str.constructor === String;
+    };
 
     /**
      * If a file path looks like a direcotry
@@ -46,19 +65,20 @@ module.exports = function(grunt) {
      * @since 0.1.0
      */
     var likeDirectory = function(filepath) {
-      return filepath && filepath.constructor === String && !path.extname(filepath); //new RegExp(path.sep + '[\\w\-]*$').test(path);
+      return isNonEmptyString(filepath) && !path.extname(filepath); //new RegExp(path.sep + '[\\w\-]*$').test(path);
     };
 
     /**
      * If key should be ignored according to ignore pattern.
      *
-     * @param  {Array|RegExp|String|Function} ignore pattern
+     * @param  {Mixed} ignore pattern
      * @param  {String} key
      * @return {Boolean}
+     * @since 0.1.0
      */
     var shouldIgnored = function(ignore, key) {
 
-      if (!ignore || !key) {
+      if (!ignore || !isNonEmptyString(key)) {
         return false;
       } else if (Array.isArray(ignore)) {
         return ignore.some(function(ig) {
@@ -68,11 +88,11 @@ module.exports = function(grunt) {
         if (ignore.test(key)) {
           return true;
         }
-      } else if (ignore.constructor === String) {
+      } else if (isNonEmptyString(ignore)) {
         if (grunt.file.match(ignore, key)) {
           return true;
         }
-      } else if ('function' === typeof ignore) {
+      } else if (isFunction(ignore)) {
         if (true === ignore.call(self, key)) {
           return true;
         }
@@ -84,12 +104,17 @@ module.exports = function(grunt) {
     };
 
     //dest could be a function
-    if ('function' !== typeof uniformDest && !likeDirectory(uniformDest)) {
+    if (!isFunction(uniformDest) && !likeDirectory(uniformDest)) {
       grunt.fail.warn('"dest" should be a directory path');
     }
 
     var done = this.async(); //This task is asynchronous
 
+    /**
+     * @param  {Object} pkg
+     * @param  {Array} depsCollection
+     * @since 0.1.0
+     */
     var pushDependency = function(pkg, depsCollection) {
       var deps = pkg.dependencies || {};
       var keys = Object.keys(deps);
@@ -103,9 +128,9 @@ module.exports = function(grunt) {
 
         mains.forEach(function(main) {
 
-          if (options.shim[key]) {
-            main = main || options.shim[key].main;
-            if (shouldIgnored(options.shim[key].ignore, main) || shouldIgnored(options.ignore, main)) {
+          if (uniformShim[key]) {
+            main = main || uniformShim[key].main;
+            if (shouldIgnored(uniformShim[key].ignore, main) || shouldIgnored(options.ignore, main)) {
               grunt.log.debug('"' + main + '" is ignored');
               return;
             }
@@ -136,28 +161,29 @@ module.exports = function(grunt) {
           var dst, src = path.join(dep.dir, dep.main);
 
           //Lookup shim
-          if (options.shim[dep.name] && options.shim[dep.name].dest) {
+          if (uniformShim[dep.name] && uniformShim[dep.name].dest) {
 
-            if (likeDirectory(options.shim[dep.name].dest)) {
+            if (likeDirectory(uniformShim[dep.name].dest)) {
               //dest for a single could be a directory
-              dst = path.join(options.shim[dep.name].dest, path.basename(dep.main));
+              dst = path.join(uniformShim[dep.name].dest, path.basename(dep.main));
             } else {
               //or a file
-              dst = options.shim[dep.name].dest;
+              dst = uniformShim[dep.name].dest;
             }
 
           } else {
-            dst = path.join('function' === typeof uniformDest ? uniformDest.call(self, dep.main) : uniformDest, path.basename(dep.main));
+            dst = path.join(isFunction(uniformDest) ? uniformDest.call(self, dep.main) : uniformDest, path.basename(dep.main));
           }
-          grunt.file.write(dst, grunt.file.read(src));
+          grunt.file.copy(src, dst);
         } else {
           grunt.fail.warn('No main file found in component "' + dep.name + '"');
         }
       });
     };
 
+    //Invoke bower to list all the components
     bower.commands.list(null, {
-      offline: true
+      offline: true//We do not check new version(s) due to speed
     }).on('end', function(installed) {
       var depsCollection = [];
       pushDependency(installed, depsCollection);
