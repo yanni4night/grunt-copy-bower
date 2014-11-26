@@ -157,4 +157,4 @@ In lieu of a formal styleguide, take care to maintain the existing coding style.
 [coveralls-url]:https://coveralls.io/r/yanni4night/grunt-copy-bower
 [coveralls-image]:https://coveralls.io/repos/yanni4night/grunt-copy-bower/badge.png
 [grunt-url]:http://gruntjs.com/
-[grunt-image]: http://img.shields.io/badge/BUILT%20WITH-GRUNT-yellow.svg
+[grunt-image]: https://cdn.gruntjs.com/builtwith.png

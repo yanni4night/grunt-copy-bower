@@ -94,6 +94,11 @@ module.exports = function(grunt) {
       custom_component_dest: ['test/custom_component_dest_test.js'],
       function_dest: ['test/function_dest_test.js'],
       ignore: ['test/ignore_test.js']
+    },
+    coveralls: {
+      all: {
+        src: 'coverage/lcov.info'
+      }
     }
 
   });
