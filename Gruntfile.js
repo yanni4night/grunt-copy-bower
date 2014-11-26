@@ -34,7 +34,11 @@ module.exports = function(grunt) {
     // Configuration to be run (and then tested).
     copy_bower: {
       all: {
-        options: {},
+        options: {
+          shim: {
+            'requirejs-text': 'text.js'
+          }
+        },
         dest: 'test/dest/js/'
       }
     },

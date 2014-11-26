@@ -13,9 +13,9 @@
 
 'use strict';
 
-var bower = require('bower');
-var path = require('path');
-var fs = require('fs-extra');
+var bower = require('bower'),
+  path = require('path'),
+  fs = require('fs');
 
 module.exports = function(grunt) {
 
@@ -24,12 +24,22 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('copy_bower', 'A grunt plugin that copies bower component files to wherever you want.', function() {
     // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({});
+    var options = this.options({
+      shim: {}
+    });
 
-    var done = this.async();
     var dest = this.data.dest;
 
-    var get = function(pkg,depsCollection) {
+    if (!dest || dest.constructor !== String) {
+      grunt.fail.log('"dest" should be a string');
+    }
+    if (fs.existsSync(dest) && fs.lstatSync(dest).isFile()) {
+      grunt.fail.log('"dest" should be a directory path');
+    }
+
+    var done = this.async(); //This task is asynchronous
+
+    var pushDependency = function(pkg, depsCollection) {
       var deps = pkg.dependencies || {};
       var keys = Object.keys(deps);
       keys.forEach(function(key, idx) {
@@ -43,12 +53,12 @@ module.exports = function(grunt) {
         mains.forEach(function(main) {
           depsCollection.push({
             dir: dep.canonicalDir,
-            main: main,
+            main: main || options.shim[key],
             version: dep.pkgMeta.version,
             name: key
           });
         });
-        get(dep,depsCollection);
+        pushDependency(dep, depsCollection);
       });
 
       return depsCollection;
@@ -56,9 +66,6 @@ module.exports = function(grunt) {
 
     var copy = function(depsCollection) {
 
-      if (!fs.existsSync(dest)) {
-        fs.mkdirpSync(dest);
-      }
       depsCollection.forEach(function(dep) {
         if (dep.main) {
           var src = path.join(dep.dir, dep.main);
@@ -74,7 +81,7 @@ module.exports = function(grunt) {
       offline: true
     }).on('end', function(installed) {
       var depsCollection = [];
-      get(installed,depsCollection);
+      pushDependency(installed, depsCollection);
       copy(depsCollection);
       done();
     });
