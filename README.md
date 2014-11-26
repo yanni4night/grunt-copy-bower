@@ -35,7 +35,7 @@ grunt.initConfig({
     your_target: {
       // Target-specific file lists and/or options go here.
     },
-  },
+  }
 });
 ```
 
@@ -73,15 +73,15 @@ grunt.initConfig({
           dest: 'test/dest/plugin/'
         },
         'underscore': {
-           dest: 'test/dest/_.js'
+           dest: 'test/dest/us.js'
         }
       }
     },
     dest: 'test/dest/'
-  },
+  }
 });
 ```
-All the files defined in bower will be copied into `test/dest` keeping the origin file name except _underscore.js_ to _\_.js_,_text.js_ to _plugin/text.js_.Note that no main file defined will lead to an error,so the _main_ defined for _requirejs-text_ is highly required.
+All the files defined in bower will be copied into `test/dest` keeping the origin file name except _underscore.js_ to _us.js_,_text.js_ to _plugin/text.js_.Note that no main file defined will lead to an error,so the _main_ defined for _requirejs-text_ is highly required.
 
 You can also define _dest_ as a function:
 
@@ -108,10 +108,22 @@ grunt.initConfig({
             return 'test/dest/bin';
           }
     }
-  },
+  }
 });
 ```
 But it's restricted that _dest_ in tasks does this,not in _shim_.
+
+There are some shortcuts for _dest_,e.g,
+
+```js
+grunt.initConfig({
+  copy_bower: {
+    dest: 'test/dest',
+    cssDest: 'test/dest/css',
+    jsDest: 'test/dest/js'
+  }
+});
+```
 
 _ignore_ could be pattens in **Array**/**Function**/**RegExp**/**String**,and nest of arrays is allowed,e.g,
 
@@ -131,10 +143,12 @@ grunt.initConfig({
       ignore: 'dist/js/bootstrap.css'
     },
     dest: 'test/dest/'
-  },
+  }
 });
 ```
 _ignore_ in _options_ could work too.Note that the patterns only match the main file in bower,not the real file name or path.
+
+
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).

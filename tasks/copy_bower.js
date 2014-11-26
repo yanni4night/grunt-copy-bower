@@ -103,6 +103,47 @@ module.exports = function(grunt) {
       return false;
     };
 
+    var fileTypeDetector = {
+      _ext: function(ext, filename) {
+        if (Array.isArray(ext)) {
+          ext = '(' + ext.join('|') + ')';
+        }
+        return new RegExp('\\.' + ext + '$', 'i').test(filename);
+      },
+      detected: function(filename) {
+        var types = Object.keys(this).filter(function(func) {
+          return /^is\w+$/.test(func) && isFunction(this[func]);
+        }, this);
+
+        for (var i = 0, len = types.length; i < len; ++i) {
+          if (this[types[i]].call(this, filename)) {
+            return types[i].slice(2).toLowerCase();
+          }
+        }
+      },
+      isCss: function(filename) {
+        return this._ext.bind(this, 'css').apply(this, arguments);
+      },
+      isLess: function(filename) {
+        return this._ext.bind(this, 'less').apply(this, arguments);
+      },
+      isSass: function(filename) {
+        return this._ext.bind(this, ['scss', 'sass']).apply(this, arguments);
+      },
+      isCoffee: function(filename) {
+        return this._ext.bind(this, 'coffee').apply(this, arguments);
+      },
+      isJs: function(filename) {
+        return this._ext.bind(this, 'js').apply(this, arguments);
+      },
+      isImage: function(filename) {
+        return this._ext.bind(this, ['jpg', 'jpeg', 'ico', 'bmp', 'png', 'gif', 'webp']).apply(this, arguments);
+      },
+      isFont: function(filename) {
+        return this._ext.bind(this, ['eot', 'svg', 'ttf', 'woff']).apply(this, arguments);
+      }
+    };
+
     //dest could be a function
     if (!isFunction(uniformDest) && !likeDirectory(uniformDest)) {
       grunt.fail.warn('"dest" should be a directory path');
@@ -158,7 +199,8 @@ module.exports = function(grunt) {
 
       depsCollection.forEach(function(dep) {
         if (dep.main) {
-          var dst, src = path.join(dep.dir, dep.main);
+          var dst, src = path.join(dep.dir, dep.main),
+            fileType;
 
           //Lookup shim
           if (uniformShim[dep.name] && uniformShim[dep.name].dest) {
@@ -171,6 +213,8 @@ module.exports = function(grunt) {
               dst = uniformShim[dep.name].dest;
             }
 
+          } else if ((fileType = fileTypeDetector.detected(src)) && likeDirectory(options[fileType + 'Dest'])) {
+            dst = path.join(options[fileType + 'Dest'], path.basename(dep.main));
           } else {
             dst = path.join(isFunction(uniformDest) ? uniformDest.call(self, dep.main) : uniformDest, path.basename(dep.main));
           }
@@ -183,7 +227,7 @@ module.exports = function(grunt) {
 
     //Invoke bower to list all the components
     bower.commands.list(null, {
-      offline: true//We do not check new version(s) due to speed
+      offline: true //We do not check new version(s) due to speed
     }).on('end', function(installed) {
       var depsCollection = [];
       pushDependency(installed, depsCollection);
