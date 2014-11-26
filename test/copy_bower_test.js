@@ -21,12 +21,20 @@ var grunt = require('grunt');
     test.doesNotThrow(block, [error], [message])
     test.ifError(value)
 */
+var fs = require('fs');
+var path = require('path');
 
 exports.copy_bower = {
   setUp: function(done) {
     done();
   },
   default_options: function(test) {
+    var files = ['angular.js', 'backbone.js', 'ember.js', 'handlebars.js', 'require.js', 'text.js', 'underscore.js', 'dist/jquery.js'];
+    test.expect(files.length);
+    files.forEach(function(file) {
+      test.ok(fs.existsSync(path.join(__dirname, 'dest', 'js', file)), file + ' should exist');
+    });
+
     test.done();
-  },
+  }
 };
