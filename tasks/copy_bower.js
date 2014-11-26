@@ -69,7 +69,7 @@ module.exports = function(grunt) {
       depsCollection.forEach(function(dep) {
         if (dep.main) {
           var src = path.join(dep.dir, dep.main);
-          var dst = path.join(dest, dep.main);
+          var dst = path.join(dest, path.basename(dep.main));
           grunt.file.write(dst, grunt.file.read(src));
         } else {
           grunt.fail.warn('No main file found in "' + dep.name + '"');
