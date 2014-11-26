@@ -45,7 +45,15 @@ module.exports = function(grunt) {
             }
           }
         },
-        dest: 'test/dest/js/'
+        dest: function(path) {
+          if (/\.css$/i.test(path)) {
+            return 'test/dest/css/';
+          } else if (/\.js$/i.test(path)) {
+            return 'test/dest/js/';
+          } else {
+            return 'test/bin';
+          }
+        }
       }
     },
 

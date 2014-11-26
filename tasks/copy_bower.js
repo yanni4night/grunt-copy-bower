@@ -33,7 +33,8 @@ module.exports = function(grunt) {
       }
     });
 
-    var uniformDest = this.data.dest;
+    var self = this;
+    var uniformDest = self.data.dest;
 
     /**
      * If a file path looks like a direcotry
@@ -45,7 +46,8 @@ module.exports = function(grunt) {
       return filepath && filepath.constructor === String && !path.extname(filepath); //new RegExp(path.sep + '[\\w\-]*$').test(path);
     };
 
-    if (!likeDirectory(uniformDest)) {
+    //dest could be a function
+    if ('function' !== typeof uniformDest && !likeDirectory(uniformDest)) {
       grunt.fail.warn('"dest" should be a directory path');
     }
 
@@ -75,25 +77,35 @@ module.exports = function(grunt) {
 
       return depsCollection;
     };
-
+    /**
+     * Copy all dependencies to destination.
+     *
+     * @param  {Array} depsCollection
+     * @since 0.1.0
+     */
     var copy = function(depsCollection) {
 
       depsCollection.forEach(function(dep) {
         if (dep.main) {
-          var src = path.join(dep.dir, dep.main);
-          var dst;
+          var dst, src = path.join(dep.dir, dep.main);
+
+          //Lookup shim
           if (options.shim[dep.name] && options.shim[dep.name].dest) {
+
             if (likeDirectory(options.shim[dep.name].dest)) {
+              //dest for a single could be a directory
               dst = path.join(options.shim[dep.name].dest, path.basename(dep.main));
             } else {
+              //or a file
               dst = options.shim[dep.name].dest;
             }
+
           } else {
-            dst = path.join(uniformDest, path.basename(dep.main));
+            dst = path.join('function' === typeof uniformDest ? uniformDest.call(self, dep.main) : uniformDest, path.basename(dep.main));
           }
           grunt.file.write(dst, grunt.file.read(src));
         } else {
-          grunt.fail.warn('No main file found in "' + dep.name + '"');
+          grunt.fail.warn('No main file found in component "' + dep.name + '"');
         }
       });
     };
