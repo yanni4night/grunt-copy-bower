@@ -25,7 +25,12 @@ module.exports = function(grunt) {
   grunt.registerMultiTask('copy_bower', 'A grunt plugin that copies bower component files to wherever you want.', function() {
     // Merge task-specific and/or target-specific options with these defaults.
     var options = this.options({
-      shim: {}
+      shim: {
+        /*'requirejs-text': {
+          main: 'text.js',
+          dest: 'test/dest/js/plugin/'
+        }*/
+      }
     });
 
     var uniformDest = this.data.dest;
@@ -80,7 +85,7 @@ module.exports = function(grunt) {
           if (options.shim[dep.name] && options.shim[dep.name].dest) {
             if (likeDirectory(options.shim[dep.name].dest)) {
               dst = path.join(options.shim[dep.name].dest, path.basename(dep.main));
-            }else{
+            } else {
               dst = options.shim[dep.name].dest;
             }
           } else {
