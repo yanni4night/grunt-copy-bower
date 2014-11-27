@@ -1,6 +1,6 @@
 # grunt-copy-bower
 
-[![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Build status][appveyor-image]][appveyor-url] [![Dependency status][david-dm-image]][david-dm-url] [![De vDependency status][david-dm-dev-image]][david-dm-dev-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Built with Grunt][grunt-image]][grunt-url]
+[![NPM version][npm-image]][npm-url] [![Downloads][downloads-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Build status][appveyor-image]][appveyor-url] [![Dependency status][david-dm-image]][david-dm-url] [![De vDependency status][david-dm-dev-image]][david-dm-dev-url] [![Coverage Status][coveralls-image]][coveralls-url] [ ![Codeship Status for yanni4night/grunt-copy-bower](https://codeship.com/projects/b693eb50-5817-0132-3f5a-5a2f44d2a21b/status)](https://codeship.com/projects/49996) [![Built with Grunt][grunt-image]][grunt-url]
 
 > A grunt plugin that copies bower component files to wherever you want.
 
