@@ -4,7 +4,7 @@
 
 > A grunt plugin that copies bower component files to wherever you want.
 
-I found neither  _grunt-bowercopy_ nor _grunt-bower-copy_ does the intuitive things they should do.[Bower](http://bower.io/) is manager tool for front-end compoents.Every components has its own _bower.json_ which indicates the _main_ file,so copying operation requires no source file but the destination.That is so obvious!
+I found neither  _grunt-bowercopy_ nor _grunt-bower-copy_ does the intuitive things they should do.[Bower](http://bower.io/) is manager tool for front-end compoents.Every component has its own _bower.json_ which indicates the _main_ file,so copying operation requires no source file but the destination.So obvious!
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`
@@ -45,7 +45,7 @@ grunt.initConfig({
 Type: `Object`
 Default value: `{}`
 
-Override default copting behavier of a component
+Override default copying behavier of a component
 
 #### options.ignore
 Type: `Function|Array|String|RegExp`
@@ -53,13 +53,15 @@ Default value: `[]`
 
 A series of pattern to match the files you want to ignore.
 
+#### options.install
+Type: `Boolean`
+Default value: `false`
+
+If try to install bower components before copying.
+
 ### Usage Examples
 
 In general,you should always define only one task,because all the src defined in bower will be copied if not in ignore pattern.
-
-#### Options
-
-######shim
 
 In shim,you could override the default copying behavier,e.g,
 
@@ -81,9 +83,7 @@ grunt.initConfig({
   }
 });
 ```
-All the files defined in bower will be copied into `test/dest` keeping the origin file name except _underscore.js_ to _us.js_,_text.js_ to _plugin/text.js_.Note that no main file defined will lead to an error,so the _main_ defined for _requirejs-text_ is highly required.
-
-######dest
+All the files defined in bower will be copied into `test/dest` keeping the origin file name except _underscore.js_ to _us.js_,_text.js_ to _plugin/text.js_.Note that no main file defined will lead to a warning,so the _main_ defined for _requirejs-text_ is highly required.
 
 You can also define _dest_ as a function:
 
@@ -113,7 +113,7 @@ grunt.initConfig({
   }
 });
 ```
-But it's restricted that _dest_ in tasks does this,not in _shim_.
+But it's restricted that _dest_ in tasks does this,not the ones in _options.shim_.
 
 There are some shortcuts for _dest_,e.g,
 
@@ -127,9 +127,7 @@ grunt.initConfig({
 });
 ```
 
-######ignore
-
-_ignore_ could be pattens in **Array**/**Function**/**RegExp**/**String**,and nest of arrays is allowed,e.g,
+_ignore_ could be patterns in **Array**/**Function**/**RegExp**/**String**,and nest of arrays is allowed,e.g,
 
 ```js
 grunt.initConfig({
@@ -152,9 +150,7 @@ grunt.initConfig({
 ```
 _ignore_ in _options_ could work too.Note that the patterns only match the main file in bower,not the real file name or path.
 
-######install
-
-Set _options.install_ to _true_ to enable **installing** bower components before copying.
+Setting _options.install_ to _true_ will enable **installing** bower components before any copying.
 
 ```js
 grunt.initConfig({
