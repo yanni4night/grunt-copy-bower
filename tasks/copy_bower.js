@@ -232,10 +232,10 @@ module.exports = function(grunt) {
               dst = oShim[dep.name].dest;
             }
 
-          } else if ((ext = getExt(src)) && likeDirectory(options[ext + 'Dest'])) {
-            dst = path.join(options[ext + 'Dest'], filename);
-          } else if ((fileType = fileTypeDetector.detected(src)) && likeDirectory(options[fileType + 'Dest'])) {
-            dst = path.join(options[fileType + 'Dest'], filename);
+          } else if ((ext = getExt(src)) && likeDirectory(self.data[ext + 'Dest'])) {
+            dst = path.join(self.data[ext + 'Dest'], filename);
+          } else if ((fileType = fileTypeDetector.detected(src)) && likeDirectory(self.data[fileType + 'Dest'])) {
+            dst = path.join(self.data[fileType + 'Dest'], filename);
           } else {
             dst = path.join(isFunction(oDest) ? oDest.call(self, dep.main) : oDest, path.basename(dep.main));
           }

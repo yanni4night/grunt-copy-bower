@@ -90,12 +90,10 @@ module.exports = function(grunt) {
         dest: 'test/dest'
       },
       filetypes_dest: {
-        options: {
-          cssDest: 'test/dest/css',
-          jsDest: 'test/dest/js',
-          fontDest: 'test/dest/font'
-        },
-        dest: 'test/dest'
+        dest: 'test/dest',
+        cssDest: 'test/dest/css',
+        jsDest: 'test/dest/js',
+        fontDest: 'test/dest/font'
       }
     },
 
