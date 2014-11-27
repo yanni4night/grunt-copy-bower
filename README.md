@@ -83,6 +83,8 @@ grunt.initConfig({
 ```
 All the files defined in bower will be copied into `test/dest` keeping the origin file name except _underscore.js_ to _us.js_,_text.js_ to _plugin/text.js_.Note that no main file defined will lead to an error,so the _main_ defined for _requirejs-text_ is highly required.
 
+######dest
+
 You can also define _dest_ as a function:
 
 ```js
@@ -125,6 +127,8 @@ grunt.initConfig({
 });
 ```
 
+######ignore
+
 _ignore_ could be pattens in **Array**/**Function**/**RegExp**/**String**,and nest of arrays is allowed,e.g,
 
 ```js
@@ -148,13 +152,28 @@ grunt.initConfig({
 ```
 _ignore_ in _options_ could work too.Note that the patterns only match the main file in bower,not the real file name or path.
 
+######install
 
+Set _options.install_ to _true_ to enable **installing** bower components before copying.
+
+```js
+grunt.initConfig({
+  copy_bower: {
+    options: {
+      shim: {
+        install: true
+      }
+    },
+    dest: 'test/dest/'
+  }
+});
+```
 
 ## Contributing
 In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
- - 2014-11-26: Support basic copy operation
+ - 2014-11-27: Support basic copying operation
 
 
 [npm-url]: https://npmjs.org/package/grunt-copy-bower
