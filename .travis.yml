@@ -3,7 +3,6 @@ before_install:
   - npm install -g grunt-cli
   - npm uninstall grunt # https://github.com/npm/npm/issues/3958
   - npm install -g bower
-  - bower install
 node_js:
   - "0.10"
 after_script:
