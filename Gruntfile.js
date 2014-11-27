@@ -41,6 +41,9 @@ module.exports = function(grunt) {
         }
       },
       default: {
+        options: {
+          install: true
+        },
         dest: 'test/dest'
       },
       custom_component_dest: {

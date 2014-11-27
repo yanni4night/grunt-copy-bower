@@ -16,6 +16,7 @@
 var bower = require('bower'),
   path = require('path'),
   fs = require('fs'),
+  async = require('async'),
   util = require('util');
 
 module.exports = function(grunt) {
@@ -33,12 +34,13 @@ module.exports = function(grunt) {
           dest: 'test/dest/js/plugin/'
         }*/
       },
-      ignore: []
+      ignore: [],
+      install: false
     });
 
     var self = this;
-    var uniformDest = self.data.dest;
-    var uniformShim = options.shim || {};
+    var oDest = self.data.dest;
+    var oShim = options.shim || {};
 
     /**
      * @param  {Mixed}  f
@@ -157,7 +159,7 @@ module.exports = function(grunt) {
     };
 
     //dest could be a function
-    if (!isFunction(uniformDest) && !likeDirectory(uniformDest)) {
+    if (!isFunction(oDest) && !likeDirectory(oDest)) {
       grunt.fail.warn('"dest" should be a directory path');
     }
 
@@ -181,9 +183,9 @@ module.exports = function(grunt) {
 
         mains.forEach(function(main) {
 
-          if (uniformShim[key]) {
-            main = main || uniformShim[key].main;
-            if (shouldIgnored(uniformShim[key].ignore, main) || shouldIgnored(options.ignore, main)) {
+          if (oShim[key]) {
+            main = main || oShim[key].main;
+            if (shouldIgnored(oShim[key].ignore, main) || shouldIgnored(options.ignore, main)) {
               grunt.log.debug('"' + main + '" is ignored');
               return;
             }
@@ -220,14 +222,14 @@ module.exports = function(grunt) {
             fileType, ext, filename = path.basename(dep.main);
 
           //Lookup shim
-          if (uniformShim[dep.name] && uniformShim[dep.name].dest) {
+          if (oShim[dep.name] && oShim[dep.name].dest) {
 
-            if (likeDirectory(uniformShim[dep.name].dest)) {
+            if (likeDirectory(oShim[dep.name].dest)) {
               //dest for a single could be a directory
-              dst = path.join(uniformShim[dep.name].dest, filename);
+              dst = path.join(oShim[dep.name].dest, filename);
             } else {
               //or a file
-              dst = uniformShim[dep.name].dest;
+              dst = oShim[dep.name].dest;
             }
 
           } else if ((ext = getExt(src)) && likeDirectory(options[ext + 'Dest'])) {
@@ -235,7 +237,7 @@ module.exports = function(grunt) {
           } else if ((fileType = fileTypeDetector.detected(src)) && likeDirectory(options[fileType + 'Dest'])) {
             dst = path.join(options[fileType + 'Dest'], filename);
           } else {
-            dst = path.join(isFunction(uniformDest) ? uniformDest.call(self, dep.main) : uniformDest, path.basename(dep.main));
+            dst = path.join(isFunction(oDest) ? oDest.call(self, dep.main) : oDest, path.basename(dep.main));
           }
           grunt.file.copy(src, dst);
         } else {
@@ -244,16 +246,37 @@ module.exports = function(grunt) {
       });
     };
 
-    //Invoke bower to list all the components
-    bower.commands.list(null, {
-      offline: true //We do not check new version(s) due to speed
-    }).on('end', function(installed) {
-      var depsCollection = [];
-      pushDependency(installed, depsCollection);
-      copy(depsCollection);
+    async.series([
+      //Install first
+      function(cb) {
+        if (!options.install) {
+          return cb();
+        }
+        grunt.log.debug('Installing bower components...');
+        bower.commands.install().on('end', function() {
+          cb();
+        }).on('error', cb);
+      },
+      //Then list the components
+      function(cb) {
+        bower.commands.list(null, {
+          offline: true //We do not check new version(s) due to speed
+        }).on('end', function(installed) {
+          var depsCollection = [];
+          try {
+            pushDependency(installed, depsCollection);
+            copy(depsCollection);
+          } catch (e) {
+            return cb(e);
+          }
+          return cb();
+        }).on('error', cb);
+      }
+    ], function(err) {
+      if (err) {
+        grunt.fail.fatal(err);
+      }
       done();
     });
-
   });
-
 };
